@@ -1,12 +1,15 @@
 #include <iostream>
 #include <fstream>
 #include <thread>
+#include <csignal>
+
+static bool escape = false;
 
 class server {
+
 public:
 
     std::string filepath;
-    bool escape = false;
 
     explicit server(char* args[]) {
         if (args[1])
@@ -17,7 +20,7 @@ public:
         std::ofstream pipefile;
         std::string textstream;
         pipefile.open("example.txt", std::ios_base::app);
-        while(1) {
+        while(!escape) {
             std::getline(std::cin, textstream);
             pipefile << textstream  << std::endl;
             std::cout << textstream << " " << filepath << std::endl;
@@ -25,19 +28,16 @@ public:
         pipefile.close();
     }
 
-    //void stop(){
-        //while(std::cin.get() != 46){
-         //  escape = false;
-       // }
-       // escape = true;
-    //}
+    static void stop(int signum){
+        std::cout<<"test"<<std::endl;
+        escape = true;
+    }
 };
 
 int main(int argc, char* argv[]) {
+    signal(SIGINT, server::stop);
     server server(argv);
     std::thread t1(&server::start, server);
-    //std::thread t2(&server::stop, server);
     t1.join();
-    //t2.join();
     return 0;
 }
