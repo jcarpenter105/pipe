@@ -1,29 +1,31 @@
 #include <iostream>
+#include <filesystem>
 #include <fstream>
 #include <thread>
 #include <csignal>
 
-static bool escape = false; // flag for exiting the program
+static bool escape = false; // Flag for exiting the program
 
 class server {
 public:
 
-    std::string filepath; // holds the path the piped file will be stored
+    std::string filepath; // Holds the path the piped file will be stored
 
+    // server initializes the server class with the command line argument that was passed in
     explicit server(char* args[]) {
         if (args[1])
-            filepath = args[1];
+            filepath = std::string(std::filesystem::current_path()) + std::string(args[1]) + "/example.txt";
     }
-    
+
     // start() opens a file, scans for user input, then prints the user input to both command prompt and piped file
     void start() const {
         std::ofstream pipefile; // The piped file
         std::string textstream; // One line of text from the original file
-        pipefile.open("example.txt", std::ios_base::app);
+        pipefile.open(filepath, std::ios_base::app);
         while(!escape) {
             std::getline(std::cin, textstream);
             pipefile << textstream  << std::endl;
-            std::cout << textstream << " " << filepath << std::endl;
+            std::cout << "echo \"" << textstream << "\" > " << filepath << std::endl;
         }
         pipefile.close();
     }
